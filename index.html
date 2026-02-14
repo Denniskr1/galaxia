@@ -3,154 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feliz San Valentín ❤️</title>
+<title>Para el amor de mi vida</title>
 
 <style>
-body { margin:0; overflow:hidden; background:black; }
-canvas { display:block; }
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    touch-action: none;
+}
+
+canvas {
+    display: block;
+}
 </style>
 </head>
+
 <body>
 
-<audio id="music" loop>
-<source src="thoseeyes.mp3" type="audio/mpeg">
-</audio>
+<audio id="musica" src="musica.mp3" loop></audio>
 
-<script type="module">
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/TextGeometry.js';
+<script>
 
+// ESCENA
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x000000, 0.0008);
 
-const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 10000);
-camera.position.set(0,400,900);
+// CÁMARA
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    2000
+);
+camera.position.z = 200;
 
-const renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
+// RENDER
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+// CONTROLES (zoom con dedos y mover libremente)
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.minDistance = 200;
-controls.maxDistance = 3000;
+controls.enableZoom = true;
+controls.enablePan = true;
+controls.minDistance = 50;
+controls.maxDistance = 800;
 
-/////////////////////////////////////////////////////
-// 🌟 PISO DE ESTRELLAS
-/////////////////////////////////////////////////////
 
-const starsGeometry = new THREE.BufferGeometry();
-const starCount = 80000;
-const positions = new Float32Array(starCount * 3);
+// GALAXIA REALISTA
+const particles = 20000;
 
-for(let i=0;i<starCount;i++){
-positions[i*3] = (Math.random()-0.5)*6000;
-positions[i*3+1] = (Math.random()-0.5)*600;
-positions[i*3+2] = (Math.random()-0.5)*6000;
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(particles * 3);
+const colors = new Float32Array(particles * 3);
+
+const colorInside = new THREE.Color("#ff99ff");
+const colorOutside = new THREE.Color("#6600ff");
+
+for (let i = 0; i < particles; i++) {
+
+    const i3 = i * 3;
+
+    const radius = Math.random() * 400;
+    const spinAngle = radius * 0.3;
+    const branchAngle = (i % 5) / 5 * Math.PI * 2;
+
+    const randomX = (Math.random() - 0.5) * 5;
+    const randomY = (Math.random() - 0.5) * 5;
+    const randomZ = (Math.random() - 0.5) * 5;
+
+    positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+    positions[i3 + 1] = randomY;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+    const mixedColor = colorInside.clone();
+    mixedColor.lerp(colorOutside, radius / 400);
+
+    colors[i3] = mixedColor.r;
+    colors[i3 + 1] = mixedColor.g;
+    colors[i3 + 2] = mixedColor.b;
 }
 
-starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-const starsMaterial = new THREE.PointsMaterial({
-color:0xffffff,
-size:1.5
+const material = new THREE.PointsMaterial({
+    size: 2,
+    vertexColors: true
 });
 
-const stars = new THREE.Points(starsGeometry, starsMaterial);
-scene.add(stars);
+const galaxy = new THREE.Points(geometry, material);
+scene.add(galaxy);
 
-/////////////////////////////////////////////////////
-// 💗 ANILLO ROSA BRILLANTE
-/////////////////////////////////////////////////////
 
-const ringGeometry = new THREE.TorusGeometry(250, 40, 64, 200);
-const ringMaterial = new THREE.MeshBasicMaterial({
-color:0xff00cc
-});
-const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-ring.rotation.x = Math.PI/2;
-scene.add(ring);
+// ANIMACIÓN
+function animate() {
+    requestAnimationFrame(animate);
 
-const coreGeometry = new THREE.SphereGeometry(150, 64, 64);
-const coreMaterial = new THREE.MeshBasicMaterial({ color:0xff1493 });
-const core = new THREE.Mesh(coreGeometry, coreMaterial);
-scene.add(core);
+    galaxy.rotation.y += 0.001;
 
-/////////////////////////////////////////////////////
-// 🧸 OSITOS (EMOJIS COMO SPRITES)
-/////////////////////////////////////////////////////
-
-const loader = new THREE.TextureLoader();
-const bearTexture = loader.load("https://i.imgur.com/6X4H0qO.png");
-
-for(let i=0;i<15;i++){
-const spriteMaterial = new THREE.SpriteMaterial({ map:bearTexture });
-const sprite = new THREE.Sprite(spriteMaterial);
-sprite.position.set(
-Math.cos(i)*600,
-50,
-Math.sin(i)*600
-);
-sprite.scale.set(150,150,1);
-scene.add(sprite);
+    controls.update();
+    renderer.render(scene, camera);
 }
 
-/////////////////////////////////////////////////////
-// ✨ TEXTO 3D FLOTANTE
-/////////////////////////////////////////////////////
-
-const fontLoader = new FontLoader();
-fontLoader.load(
-'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
-function(font){
-
-const textGeo = new TextGeometry("Te amo hoy y siempre ❤️",{
-font:font,
-size:40,
-height:5
-});
-
-const textMat = new THREE.MeshBasicMaterial({ color:0xff66ff });
-const textMesh = new THREE.Mesh(textGeo,textMat);
-textMesh.position.set(-400,-200,0);
-scene.add(textMesh);
-
-});
-
-/////////////////////////////////////////////////////
-// 🎵 MÚSICA
-/////////////////////////////////////////////////////
-
-window.addEventListener("click",()=>{
-document.getElementById("music").play();
-},{ once:true });
-
-/////////////////////////////////////////////////////
-// 🎬 ANIMACIÓN
-/////////////////////////////////////////////////////
-
-function animate(){
-requestAnimationFrame(animate);
-
-ring.rotation.z += 0.01;
-core.scale.x = 1 + Math.sin(Date.now()*0.003)*0.2;
-core.scale.y = 1 + Math.sin(Date.now()*0.003)*0.2;
-core.scale.z = 1 + Math.sin(Date.now()*0.003)*0.2;
-
-controls.update();
-renderer.render(scene,camera);
-}
 animate();
 
-window.addEventListener("resize",()=>{
-camera.aspect = innerWidth/innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(innerWidth,innerHeight);
+
+// RESPONSIVE
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+
+// ACTIVAR MUSICA CON TOQUE
+document.body.addEventListener('click', () => {
+    const audio = document.getElementById("musica");
+    audio.play();
+}, { once: true });
 
 </script>
 
