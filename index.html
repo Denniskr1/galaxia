@@ -4,16 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Para el amor de mi vida</title>
-
 <style>
 body{
-    margin:0;
-    overflow:hidden;
-    background:black;
+margin:0;
+overflow:hidden;
+background:black;
+font-family:Arial;
 }
-canvas{
-    display:block;
-}
+canvas{display:block;}
 </style>
 </head>
 <body>
@@ -22,19 +20,16 @@ canvas{
 
 import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js';
+import { FontLoader } from 'https://unpkg.com/three@0.152.2/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'https://unpkg.com/three@0.152.2/examples/jsm/geometries/TextGeometry.js';
 
 // ESCENA
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x000000, 0.0008);
+scene.fog = new THREE.FogExp2(0x000000, 0.0006);
 
 // CÁMARA
-const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    2000
-);
-camera.position.set(0,150,400);
+const camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,5000);
+camera.position.set(0,200,600);
 
 // RENDER
 const renderer = new THREE.WebGLRenderer({antialias:true});
@@ -45,99 +40,195 @@ document.body.appendChild(renderer.domElement);
 // CONTROLES
 const controls = new OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
-controls.minDistance = 100;
-controls.maxDistance = 1000;
+controls.minDistance = 200;
+controls.maxDistance = 1500;
 
 // GALAXIA
-const particles = 40000;
+const particles = 60000;
 const geometry = new THREE.BufferGeometry();
 const positions = new Float32Array(particles*3);
 const colors = new Float32Array(particles*3);
 
 const insideColor = new THREE.Color("#ff66ff");
-const outsideColor = new THREE.Color("#3300ff");
+const outsideColor = new THREE.Color("#2200ff");
 
 for(let i=0;i<particles;i++){
+const i3=i*3;
+const radius=Math.random()*800;
+const spinAngle=radius*0.4;
+const branchAngle=(i%7)/7*Math.PI*2;
 
-    const i3 = i*3;
-    const radius = Math.random()*600;
-    const spinAngle = radius*0.4;
-    const branchAngle = (i%6)/6*Math.PI*2;
+positions[i3]=Math.cos(branchAngle+spinAngle)*radius+(Math.random()-0.5)*30;
+positions[i3+1]=(Math.random()-0.5)*40;
+positions[i3+2]=Math.sin(branchAngle+spinAngle)*radius+(Math.random()-0.5)*30;
 
-    const randomX = (Math.random()-0.5)*20;
-    const randomY = (Math.random()-0.5)*20;
-    const randomZ = (Math.random()-0.5)*20;
+const mixedColor=insideColor.clone();
+mixedColor.lerp(outsideColor,radius/800);
 
-    positions[i3] = Math.cos(branchAngle+spinAngle)*radius+randomX;
-    positions[i3+1] = randomY*0.3;
-    positions[i3+2] = Math.sin(branchAngle+spinAngle)*radius+randomZ;
-
-    const mixedColor = insideColor.clone();
-    mixedColor.lerp(outsideColor,radius/600);
-
-    colors[i3] = mixedColor.r;
-    colors[i3+1] = mixedColor.g;
-    colors[i3+2] = mixedColor.b;
+colors[i3]=mixedColor.r;
+colors[i3+1]=mixedColor.g;
+colors[i3+2]=mixedColor.b;
 }
 
 geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
 geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
 
-const material = new THREE.PointsMaterial({
-    size:3,
-    vertexColors:true,
-    blending:THREE.AdditiveBlending,
-    depthWrite:false
+const material=new THREE.PointsMaterial({
+size:3,
+vertexColors:true,
+blending:THREE.AdditiveBlending,
+depthWrite:false
 });
 
-const galaxy = new THREE.Points(geometry,material);
+const galaxy=new THREE.Points(geometry,material);
 scene.add(galaxy);
 
 
-// ESTRELLAS LEJANAS
-const starsGeometry = new THREE.BufferGeometry();
-const starCount = 10000;
-const starPositions = new Float32Array(starCount*3);
+// 100 FRASES
+const frases=[
+"Contigo el universo tiene sentido",
+"Eres mi estrella favorita",
+"Mi infinito eres tú",
+"Tu amor ilumina mi galaxia",
+"Eres mi destino escrito en las estrellas",
+"Mi corazón orbita alrededor del tuyo",
+"Eres mi milagro cósmico",
+"Mi mundo empieza en tus ojos",
+"Eres mi constelación perfecta",
+"Mi eternidad lleva tu nombre",
+"Contigo todo brilla",
+"Eres mi paz en el caos",
+"Mi alma encontró hogar en ti",
+"Eres mi magia diaria",
+"Mi universo es tu sonrisa",
+"Eres mi latido eterno",
+"Mi vida comenzó contigo",
+"Eres mi sueño cumplido",
+"Mi destino es amarte",
+"Eres mi razón infinita",
+"Mi cielo favorito es tu mirada",
+"Eres mi energía vital",
+"Mi galaxia eres tú",
+"Eres mi inspiración eterna",
+"Mi amor no tiene fin",
+"Eres mi milagro diario",
+"Mi corazón es tuyo",
+"Eres mi todo",
+"Mi luz en la oscuridad",
+"Eres mi infinito",
+"Mi paz favorita",
+"Eres mi felicidad",
+"Mi universo perfecto",
+"Eres mi verdad",
+"Mi sueño eterno",
+"Eres mi esperanza",
+"Mi latido favorito",
+"Eres mi razón",
+"Mi estrella guía",
+"Eres mi inspiración",
+"Mi amor eterno",
+"Eres mi destino",
+"Mi eternidad",
+"Eres mi ilusión",
+"Mi universo",
+"Eres mi milagro",
+"Mi corazón",
+"Eres mi luz",
+"Mi pasión",
+"Eres mi todo siempre",
+"Mi estrella brillante",
+"Eres mi mundo",
+"Mi amor infinito",
+"Eres mi razón de vivir",
+"Mi universo mágico",
+"Eres mi felicidad eterna",
+"Mi alma gemela",
+"Eres mi sueño real",
+"Mi amor verdadero",
+"Eres mi calma",
+"Mi cielo",
+"Eres mi eternidad",
+"Mi galaxia favorita",
+"Eres mi brillo",
+"Mi destino eterno",
+"Eres mi poesía",
+"Mi vida entera",
+"Eres mi historia",
+"Mi amor sin límites",
+"Eres mi energía",
+"Mi latido constante",
+"Eres mi inspiración diaria",
+"Mi universo brillante",
+"Eres mi estrella eterna",
+"Mi paz infinita",
+"Eres mi sol",
+"Mi luna",
+"Eres mi universo completo",
+"Mi razón eterna",
+"Eres mi amor absoluto",
+"Mi mundo entero",
+"Eres mi ilusión eterna",
+"Mi felicidad infinita",
+"Eres mi luz eterna",
+"Mi corazón infinito",
+"Eres mi todo infinito",
+"Mi universo contigo",
+"Eres mi eternidad viva",
+"Mi amor galáctico",
+"Eres mi constelación",
+"Mi destino galáctico",
+"Eres mi amor estelar",
+"Mi alma eterna",
+"Eres mi vida infinita",
+"Mi universo real",
+"Eres mi siempre"
+];
 
-for(let i=0;i<starCount;i++){
-    const i3 = i*3;
-    starPositions[i3] = (Math.random()-0.5)*2000;
-    starPositions[i3+1] = (Math.random()-0.5)*2000;
-    starPositions[i3+2] = (Math.random()-0.5)*2000;
-}
+const loader=new FontLoader();
+loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',function(font){
 
-starsGeometry.setAttribute('position',new THREE.BufferAttribute(starPositions,3));
-
-const starsMaterial = new THREE.PointsMaterial({
-    color:0xffffff,
-    size:1
+frases.forEach((texto,i)=>{
+const geometry=new TextGeometry(texto,{
+font:font,
+size:10,
+height:2
 });
 
-const stars = new THREE.Points(starsGeometry,starsMaterial);
-scene.add(stars);
+const material=new THREE.MeshBasicMaterial({color:0xffffff});
+const mesh=new THREE.Mesh(geometry,material);
 
+const angle=(i/frases.length)*Math.PI*2;
+const radius=1000;
+
+mesh.position.x=Math.cos(angle)*radius;
+mesh.position.z=Math.sin(angle)*radius;
+mesh.position.y=(Math.random()-0.5)*400;
+
+mesh.lookAt(0,0,0);
+scene.add(mesh);
+});
+
+});
 
 // ANIMACIÓN
 function animate(){
-    requestAnimationFrame(animate);
+requestAnimationFrame(animate);
 
-    galaxy.rotation.y += 0.0008;
-    stars.rotation.y += 0.0002;
+galaxy.rotation.y+=0.0005;
+scene.rotation.y+=0.0003;
 
-    controls.update();
-    renderer.render(scene,camera);
+controls.update();
+renderer.render(scene,camera);
 }
 
 animate();
 
-// RESPONSIVE
 window.addEventListener('resize',()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth,window.innerHeight);
+camera.aspect=window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth,window.innerHeight);
 });
 
 </script>
-
 </body>
 </html>
