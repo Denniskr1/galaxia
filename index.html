@@ -15,9 +15,9 @@ top:50%;
 left:50%;
 transform:translate(-50%,-50%);
 color:#ff66ff;
-font-size:45px;
+font-size:50px;
 text-align:center;
-text-shadow:0 0 30px #ff00ff, 0 0 60px #aa00ff;
+text-shadow:0 0 40px #ff00ff, 0 0 80px #aa00ff;
 pointer-events:none;
 }
 </style>
@@ -33,80 +33,121 @@ Para el Amor de Mi Vida 💜
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
+
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x000010, 0.0005);
+scene.fog = new THREE.FogExp2(0x000010, 0.00035);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 8000);
-camera.position.z = 800;
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+10000
+);
+camera.position.z = 1500;
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.autoRotate = true;
-controls.autoRotateSpeed = 0.3;
-
+/////////////////////////////////////////////////////
 // 🌌 GALAXIA ESPIRAL REALISTA
-const starGeometry = new THREE.BufferGeometry();
-const starCount = 20000;
-const positions = [];
+/////////////////////////////////////////////////////
+
+const starCount = 40000;
+const branches = 5;
+const spin = 0.4;
+const randomness = 0.5;
+
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(starCount * 3);
 
 for(let i=0;i<starCount;i++){
-let radius = Math.random()*3000;
-let spin = radius*0.002;
-let angle = Math.random()*Math.PI*2;
 
-let x = Math.cos(angle+spin)*radius;
-let y = (Math.random()-0.5)*600;
-let z = Math.sin(angle+spin)*radius;
+const i3 = i*3;
+const radius = Math.random()*4000;
+const branchAngle = (i % branches) / branches * Math.PI * 2;
 
-positions.push(x,y,z);
+const spinAngle = radius * spin;
+
+const randomX = (Math.random()-0.5)*randomness*radius*0.3;
+const randomY = (Math.random()-0.5)*randomness*200;
+const randomZ = (Math.random()-0.5)*randomness*radius*0.3;
+
+positions[i3] =
+Math.cos(branchAngle + spinAngle) * radius + randomX;
+
+positions[i3+1] = randomY;
+
+positions[i3+2] =
+Math.sin(branchAngle + spinAngle) * radius + randomZ;
 }
 
-starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+geometry.setAttribute(
+'position',
+new THREE.BufferAttribute(positions,3)
+);
 
-const starMaterial = new THREE.PointsMaterial({
+const material = new THREE.PointsMaterial({
 size:2,
-color:0xffffff
+color:0xffffff,
+transparent:true,
+opacity:0.9
 });
 
-const galaxy = new THREE.Points(starGeometry, starMaterial);
+const galaxy = new THREE.Points(geometry, material);
 scene.add(galaxy);
 
-// 💜 Núcleo brillante
-const coreGeometry = new THREE.SphereGeometry(120, 64, 64);
+/////////////////////////////////////////////////////
+// 💜 NÚCLEO BRILLANTE
+/////////////////////////////////////////////////////
+
+const coreGeometry = new THREE.SphereGeometry(200, 64, 64);
 const coreMaterial = new THREE.MeshBasicMaterial({
 color:0xaa00ff
 });
 const core = new THREE.Mesh(coreGeometry, coreMaterial);
 scene.add(core);
 
-// 🔊 Activar música al primer clic
-window.addEventListener("click",()=>{
+/////////////////////////////////////////////////////
+// 🎬 ANIMACIÓN CINEMÁTICA
+/////////////////////////////////////////////////////
+
+let warp = false;
+
+window.addEventListener("click", ()=>{
 document.getElementById("music").play();
-},{ once:true });
+warp = true;
+setTimeout(()=> warp=false, 1200);
+});
 
 function animate(){
 requestAnimationFrame(animate);
-galaxy.rotation.y += 0.0008;
-core.scale.x = 1 + Math.sin(Date.now()*0.003)*0.2;
-core.scale.y = 1 + Math.sin(Date.now()*0.003)*0.2;
-core.scale.z = 1 + Math.sin(Date.now()*0.003)*0.2;
+
+galaxy.rotation.y += 0.0006;
+
+core.scale.x = 1 + Math.sin(Date.now()*0.002)*0.3;
+core.scale.y = 1 + Math.sin(Date.now()*0.002)*0.3;
+core.scale.z = 1 + Math.sin(Date.now()*0.002)*0.3;
+
+if(warp){
+camera.position.z -= 20;
+}else{
+camera.position.z += (1500 - camera.position.z)*0.05;
+}
+
 renderer.render(scene,camera);
-controls.update();
 }
 animate();
 
-window.addEventListener('resize',()=>{
+window.addEventListener("resize",()=>{
 camera.aspect = window.innerWidth/window.innerHeight;
 camera.updateProjectionMatrix();
 renderer.setSize(window.innerWidth,window.innerHeight);
 });
+
 </script>
 
 </body>
