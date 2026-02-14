@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Para el Amor de Mi Vida 💜</title>
 
 <style>
-body { margin:0; overflow:hidden; background:black; font-family:Arial; }
+body { margin:0; overflow:hidden; background:black; }
 canvas { display:block; }
 
 .center-text{
@@ -32,9 +32,10 @@ pointer-events:none;
 Para el Amor de Mi Vida 💜
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script type="module">
 
-<script>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000010, 0.00035);
@@ -45,7 +46,7 @@ window.innerWidth/window.innerHeight,
 0.1,
 10000
 );
-camera.position.z = 1500;
+camera.position.set(0,500,1500);
 
 const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -53,13 +54,24 @@ renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
 /////////////////////////////////////////////////////
+// 🎮 CONTROLES REALES (ZOOM + ROTACIÓN)
+/////////////////////////////////////////////////////
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.minDistance = 300;
+controls.maxDistance = 4000;
+controls.enablePan = false;
+
+/////////////////////////////////////////////////////
 // 🌌 GALAXIA ESPIRAL REALISTA
 /////////////////////////////////////////////////////
 
-const starCount = 40000;
+const starCount = 50000;
 const branches = 5;
 const spin = 0.4;
-const randomness = 0.5;
+const randomness = 0.6;
 
 const geometry = new THREE.BufferGeometry();
 const positions = new Float32Array(starCount * 3);
@@ -69,11 +81,10 @@ for(let i=0;i<starCount;i++){
 const i3 = i*3;
 const radius = Math.random()*4000;
 const branchAngle = (i % branches) / branches * Math.PI * 2;
-
 const spinAngle = radius * spin;
 
 const randomX = (Math.random()-0.5)*randomness*radius*0.3;
-const randomY = (Math.random()-0.5)*randomness*200;
+const randomY = (Math.random()-0.5)*randomness*300;
 const randomZ = (Math.random()-0.5)*randomness*radius*0.3;
 
 positions[i3] =
@@ -112,32 +123,27 @@ const core = new THREE.Mesh(coreGeometry, coreMaterial);
 scene.add(core);
 
 /////////////////////////////////////////////////////
-// 🎬 ANIMACIÓN CINEMÁTICA
+// 🔊 MÚSICA
 /////////////////////////////////////////////////////
-
-let warp = false;
 
 window.addEventListener("click", ()=>{
 document.getElementById("music").play();
-warp = true;
-setTimeout(()=> warp=false, 1200);
-});
+},{ once:true });
+
+/////////////////////////////////////////////////////
+// 🎬 ANIMACIÓN
+/////////////////////////////////////////////////////
 
 function animate(){
 requestAnimationFrame(animate);
 
-galaxy.rotation.y += 0.0006;
+galaxy.rotation.y += 0.0005;
 
 core.scale.x = 1 + Math.sin(Date.now()*0.002)*0.3;
 core.scale.y = 1 + Math.sin(Date.now()*0.002)*0.3;
 core.scale.z = 1 + Math.sin(Date.now()*0.002)*0.3;
 
-if(warp){
-camera.position.z -= 20;
-}else{
-camera.position.z += (1500 - camera.position.z)*0.05;
-}
-
+controls.update();
 renderer.render(scene,camera);
 }
 animate();
