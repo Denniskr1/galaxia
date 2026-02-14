@@ -10,26 +10,31 @@ margin:0;
 overflow:hidden;
 background:black;
 font-family:Arial;
+color:white;
 }
 canvas{display:block;}
+.frase{
+position:absolute;
+color:white;
+font-size:14px;
+white-space:nowrap;
+pointer-events:none;
+text-shadow:0 0 10px white;
+}
 </style>
 </head>
 <body>
 
-<script type="module">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js';
-import { FontLoader } from 'https://unpkg.com/three@0.152.2/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'https://unpkg.com/three@0.152.2/examples/jsm/geometries/TextGeometry.js';
+<script>
 
 // ESCENA
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x000000, 0.0006);
 
 // CÁMARA
 const camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,5000);
-camera.position.set(0,200,600);
+camera.position.z = 800;
 
 // RENDER
 const renderer = new THREE.WebGLRenderer({antialias:true});
@@ -37,14 +42,8 @@ renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-// CONTROLES
-const controls = new OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
-controls.minDistance = 200;
-controls.maxDistance = 1500;
-
-// GALAXIA
-const particles = 60000;
+// GALAXIA REALISTA
+const particles = 70000;
 const geometry = new THREE.BufferGeometry();
 const positions = new Float32Array(particles*3);
 const colors = new Float32Array(particles*3);
@@ -54,16 +53,16 @@ const outsideColor = new THREE.Color("#2200ff");
 
 for(let i=0;i<particles;i++){
 const i3=i*3;
-const radius=Math.random()*800;
+const radius=Math.random()*900;
 const spinAngle=radius*0.4;
 const branchAngle=(i%7)/7*Math.PI*2;
 
-positions[i3]=Math.cos(branchAngle+spinAngle)*radius+(Math.random()-0.5)*30;
-positions[i3+1]=(Math.random()-0.5)*40;
-positions[i3+2]=Math.sin(branchAngle+spinAngle)*radius+(Math.random()-0.5)*30;
+positions[i3]=Math.cos(branchAngle+spinAngle)*radius+(Math.random()-0.5)*40;
+positions[i3+1]=(Math.random()-0.5)*50;
+positions[i3+2]=Math.sin(branchAngle+spinAngle)*radius+(Math.random()-0.5)*40;
 
 const mixedColor=insideColor.clone();
-mixedColor.lerp(outsideColor,radius/800);
+mixedColor.lerp(outsideColor,radius/900);
 
 colors[i3]=mixedColor.r;
 colors[i3+1]=mixedColor.g;
@@ -74,7 +73,7 @@ geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
 geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
 
 const material=new THREE.PointsMaterial({
-size:3,
+size:2.5,
 vertexColors:true,
 blending:THREE.AdditiveBlending,
 depthWrite:false
@@ -84,8 +83,10 @@ const galaxy=new THREE.Points(geometry,material);
 scene.add(galaxy);
 
 
-// 100 FRASES
-const frases=[
+// FRASES HTML ORBITANDO
+const frases = [];
+const textos = [
+
 "Contigo el universo tiene sentido",
 "Eres mi estrella favorita",
 "Mi infinito eres tú",
@@ -96,6 +97,7 @@ const frases=[
 "Mi mundo empieza en tus ojos",
 "Eres mi constelación perfecta",
 "Mi eternidad lleva tu nombre",
+
 "Contigo todo brilla",
 "Eres mi paz en el caos",
 "Mi alma encontró hogar en ti",
@@ -105,119 +107,47 @@ const frases=[
 "Mi vida comenzó contigo",
 "Eres mi sueño cumplido",
 "Mi destino es amarte",
-"Eres mi razón infinita",
-"Mi cielo favorito es tu mirada",
-"Eres mi energía vital",
-"Mi galaxia eres tú",
-"Eres mi inspiración eterna",
-"Mi amor no tiene fin",
-"Eres mi milagro diario",
-"Mi corazón es tuyo",
-"Eres mi todo",
-"Mi luz en la oscuridad",
-"Eres mi infinito",
-"Mi paz favorita",
-"Eres mi felicidad",
-"Mi universo perfecto",
-"Eres mi verdad",
-"Mi sueño eterno",
-"Eres mi esperanza",
-"Mi latido favorito",
-"Eres mi razón",
-"Mi estrella guía",
-"Eres mi inspiración",
-"Mi amor eterno",
-"Eres mi destino",
-"Mi eternidad",
-"Eres mi ilusión",
-"Mi universo",
-"Eres mi milagro",
-"Mi corazón",
-"Eres mi luz",
-"Mi pasión",
-"Eres mi todo siempre",
-"Mi estrella brillante",
-"Eres mi mundo",
-"Mi amor infinito",
-"Eres mi razón de vivir",
-"Mi universo mágico",
-"Eres mi felicidad eterna",
-"Mi alma gemela",
-"Eres mi sueño real",
-"Mi amor verdadero",
-"Eres mi calma",
-"Mi cielo",
-"Eres mi eternidad",
-"Mi galaxia favorita",
-"Eres mi brillo",
-"Mi destino eterno",
-"Eres mi poesía",
-"Mi vida entera",
-"Eres mi historia",
-"Mi amor sin límites",
-"Eres mi energía",
-"Mi latido constante",
-"Eres mi inspiración diaria",
-"Mi universo brillante",
-"Eres mi estrella eterna",
-"Mi paz infinita",
-"Eres mi sol",
-"Mi luna",
-"Eres mi universo completo",
-"Mi razón eterna",
-"Eres mi amor absoluto",
-"Mi mundo entero",
-"Eres mi ilusión eterna",
-"Mi felicidad infinita",
-"Eres mi luz eterna",
-"Mi corazón infinito",
-"Eres mi todo infinito",
-"Mi universo contigo",
-"Eres mi eternidad viva",
-"Mi amor galáctico",
-"Eres mi constelación",
-"Mi destino galáctico",
-"Eres mi amor estelar",
-"Mi alma eterna",
-"Eres mi vida infinita",
-"Mi universo real",
-"Eres mi siempre"
+"Eres mi razón infinita"
+
 ];
 
-const loader=new FontLoader();
-loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',function(font){
+for(let i=0;i<textos.length;i++){
+let div=document.createElement("div");
+div.className="frase";
+div.innerText=textos[i];
+document.body.appendChild(div);
 
-frases.forEach((texto,i)=>{
-const geometry=new TextGeometry(texto,{
-font:font,
-size:10,
-height:2
+frases.push({
+element:div,
+angle:Math.random()*Math.PI*2,
+radius:1200,
+height:(Math.random()-0.5)*600
 });
+}
 
-const material=new THREE.MeshBasicMaterial({color:0xffffff});
-const mesh=new THREE.Mesh(geometry,material);
-
-const angle=(i/frases.length)*Math.PI*2;
-const radius=1000;
-
-mesh.position.x=Math.cos(angle)*radius;
-mesh.position.z=Math.sin(angle)*radius;
-mesh.position.y=(Math.random()-0.5)*400;
-
-mesh.lookAt(0,0,0);
-scene.add(mesh);
-});
-
-});
 
 // ANIMACIÓN
 function animate(){
 requestAnimationFrame(animate);
 
-galaxy.rotation.y+=0.0005;
-scene.rotation.y+=0.0003;
+galaxy.rotation.y+=0.0007;
 
-controls.update();
+frases.forEach(f=>{
+f.angle+=0.0005;
+
+let x=Math.cos(f.angle)*f.radius;
+let z=Math.sin(f.angle)*f.radius;
+let y=f.height;
+
+let vector=new THREE.Vector3(x,y,z);
+vector.project(camera);
+
+let posX=(vector.x*0.5+0.5)*window.innerWidth;
+let posY=(-vector.y*0.5+0.5)*window.innerHeight;
+
+f.element.style.transform=`translate(-50%,-50%) translate(${posX}px,${posY}px)`;
+});
+
 renderer.render(scene,camera);
 }
 
