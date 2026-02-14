@@ -6,150 +6,98 @@
 <title>Para el Amor de Mi Vida 💜</title>
 
 <style>
-body { margin:0; overflow:hidden; background:black; }
+body { margin:0; overflow:hidden; background:black; font-family:Arial; }
 canvas { display:block; }
+
 #ytplayer { position:absolute; width:0; height:0; border:0; opacity:0; }
+
+.center-text {
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+color:#ff66ff;
+font-size:40px;
+text-align:center;
+text-shadow:0 0 20px #ff00ff;
+}
+
+.phrase {
+position:absolute;
+color:white;
+font-size:14px;
+animation:float 20s linear infinite;
+white-space:nowrap;
+}
+
+@keyframes float {
+from { transform:translateY(100vh); opacity:0; }
+to { transform:translateY(-100vh); opacity:1; }
+}
 </style>
 </head>
 <body>
 
-<!-- 🎵 Música Opción B -->
 <iframe id="ytplayer"
 src="https://www.youtube.com/embed/t1dvrcqlQgI?autoplay=1&loop=1&playlist=t1dvrcqlQgI&controls=0"
 allow="autoplay">
 </iframe>
 
+<div class="center-text">
+Para el Amor de Mi Vida 💜
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/FontLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/geometries/TextGeometry.js"></script>
 
 <script>
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x000015, 0.0006);
-
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 6000);
-camera.position.z = 400;
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
+camera.position.z = 500;
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
 controls.autoRotate = true;
-controls.autoRotateSpeed = 0.3;
+controls.autoRotateSpeed = 0.5;
 
-// 🌌 GALAXIA ESPIRAL ULTRA
+// 🌌 Galaxia
 const starGeometry = new THREE.BufferGeometry();
-const starCount = 12000;
+const starCount = 10000;
 const positions = [];
 
 for(let i=0;i<starCount;i++){
-    let radius = Math.random()*1500;
-    let branch = i % 4;
-    let angle = (radius*0.02) + (branch*Math.PI/2);
-    let randomOffset = (Math.random()-0.5)*50;
-
-    let x = Math.cos(angle)*radius + randomOffset;
-    let y = (Math.random()-0.5)*200;
-    let z = Math.sin(angle)*radius + randomOffset;
-
-    positions.push(x,y,z);
+let x = (Math.random()-0.5)*2000;
+let y = (Math.random()-0.5)*2000;
+let z = (Math.random()-0.5)*2000;
+positions.push(x,y,z);
 }
 
 starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
 
-const starMaterial = new THREE.PointsMaterial({
-    size:2,
-    vertexColors:false,
-    color:0xffffff
-});
+const starMaterial = new THREE.PointsMaterial({ size:2, color:0xffffff });
+const stars = new THREE.Points(starGeometry, starMaterial);
+scene.add(stars);
 
-const galaxy = new THREE.Points(starGeometry, starMaterial);
-scene.add(galaxy);
-
-// 🪐 Núcleo energético pulsante
-const sphereGeo = new THREE.SphereGeometry(100,64,64);
-const sphereMat = new THREE.MeshStandardMaterial({
-    color:0x000000,
-    emissive:0xaa00ff,
-    emissiveIntensity:2
-});
-const core = new THREE.Mesh(sphereGeo, sphereMat);
-scene.add(core);
-
-const light = new THREE.PointLight(0xff00ff,5);
-scene.add(light);
-
-// 💜 TEXTO CENTRAL
-const loader = new THREE.FontLoader();
-loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
-function(font){
-
-    const centerGeo = new THREE.TextGeometry("Para el Amor de Mi Vida 💜",{
-        font:font,
-        size:20,
-        height:3
-    });
-
-    const centerMat = new THREE.MeshBasicMaterial({color:0xff66ff});
-    const centerText = new THREE.Mesh(centerGeo,centerMat);
-    centerText.position.set(-150,150,0);
-    scene.add(centerText);
-
-    // 100 frases dinámicas
-    for(let i=1;i<=100;i++){
-
-        const textGeo = new THREE.TextGeometry("Te Amo Eternamente "+i,{
-            font:font,
-            size:6,
-            height:1
-        });
-
-        const color = new THREE.Color(
-            Math.random()*0.7+0.3,
-            Math.random()*0.4,
-            Math.random()
-        );
-
-        const textMat = new THREE.MeshBasicMaterial({color:color});
-        const mesh = new THREE.Mesh(textGeo,textMat);
-
-        let radius = 400 + Math.random()*800;
-        let angle = Math.random()*Math.PI*2;
-
-        mesh.position.set(
-            Math.cos(angle)*radius,
-            (Math.random()-0.5)*400,
-            Math.sin(angle)*radius
-        );
-
-        mesh.lookAt(0,0,0);
-        scene.add(mesh);
-    }
-});
-
-// 🌠 Warp al tocar núcleo
-window.addEventListener("click",()=>{
-    camera.position.z = 100;
-    setTimeout(()=> camera.position.z = 400, 800);
-});
-
-// 🎬 Animación
 function animate(){
 requestAnimationFrame(animate);
-
-galaxy.rotation.y += 0.001;
-core.rotation.y += 0.002;
-
-let pulse = Math.sin(Date.now()*0.003)*0.5+1.5;
-core.material.emissiveIntensity = pulse;
-
+stars.rotation.y += 0.0008;
 renderer.render(scene,camera);
 controls.update();
 }
 animate();
+
+// 💜 100 frases flotando
+for(let i=1;i<=100;i++){
+let phrase = document.createElement("div");
+phrase.className="phrase";
+phrase.innerText="Te Amo Eternamente 💜 "+i;
+phrase.style.left=Math.random()*100+"vw";
+phrase.style.animationDuration=(10+Math.random()*20)+"s";
+document.body.appendChild(phrase);
+}
 
 window.addEventListener('resize',()=>{
 camera.aspect = window.innerWidth/window.innerHeight;
