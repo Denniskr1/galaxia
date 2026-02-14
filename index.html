@@ -6,126 +6,136 @@
 <title>Para el amor de mi vida</title>
 
 <style>
-body {
-    margin: 0;
-    overflow: hidden;
-    background: black;
-    touch-action: none;
+body{
+    margin:0;
+    overflow:hidden;
+    background:black;
 }
-
-canvas {
-    display: block;
+canvas{
+    display:block;
 }
 </style>
 </head>
-
 <body>
 
-<audio id="musica" src="musica.mp3" loop></audio>
+<script type="module">
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
-
-<script>
+import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js';
 
 // ESCENA
 const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000000, 0.0008);
 
 // CÁMARA
 const camera = new THREE.PerspectiveCamera(
     75,
-    window.innerWidth / window.innerHeight,
+    window.innerWidth/window.innerHeight,
     0.1,
     2000
 );
-camera.position.z = 200;
+camera.position.set(0,150,400);
 
 // RENDER
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-// CONTROLES (zoom con dedos y mover libremente)
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+// CONTROLES
+const controls = new OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
-controls.enableZoom = true;
-controls.enablePan = true;
-controls.minDistance = 50;
-controls.maxDistance = 800;
+controls.minDistance = 100;
+controls.maxDistance = 1000;
 
-
-// GALAXIA REALISTA
-const particles = 20000;
-
+// GALAXIA
+const particles = 40000;
 const geometry = new THREE.BufferGeometry();
-const positions = new Float32Array(particles * 3);
-const colors = new Float32Array(particles * 3);
+const positions = new Float32Array(particles*3);
+const colors = new Float32Array(particles*3);
 
-const colorInside = new THREE.Color("#ff99ff");
-const colorOutside = new THREE.Color("#6600ff");
+const insideColor = new THREE.Color("#ff66ff");
+const outsideColor = new THREE.Color("#3300ff");
 
-for (let i = 0; i < particles; i++) {
+for(let i=0;i<particles;i++){
 
-    const i3 = i * 3;
+    const i3 = i*3;
+    const radius = Math.random()*600;
+    const spinAngle = radius*0.4;
+    const branchAngle = (i%6)/6*Math.PI*2;
 
-    const radius = Math.random() * 400;
-    const spinAngle = radius * 0.3;
-    const branchAngle = (i % 5) / 5 * Math.PI * 2;
+    const randomX = (Math.random()-0.5)*20;
+    const randomY = (Math.random()-0.5)*20;
+    const randomZ = (Math.random()-0.5)*20;
 
-    const randomX = (Math.random() - 0.5) * 5;
-    const randomY = (Math.random() - 0.5) * 5;
-    const randomZ = (Math.random() - 0.5) * 5;
+    positions[i3] = Math.cos(branchAngle+spinAngle)*radius+randomX;
+    positions[i3+1] = randomY*0.3;
+    positions[i3+2] = Math.sin(branchAngle+spinAngle)*radius+randomZ;
 
-    positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
-    positions[i3 + 1] = randomY;
-    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
-
-    const mixedColor = colorInside.clone();
-    mixedColor.lerp(colorOutside, radius / 400);
+    const mixedColor = insideColor.clone();
+    mixedColor.lerp(outsideColor,radius/600);
 
     colors[i3] = mixedColor.r;
-    colors[i3 + 1] = mixedColor.g;
-    colors[i3 + 2] = mixedColor.b;
+    colors[i3+1] = mixedColor.g;
+    colors[i3+2] = mixedColor.b;
 }
 
-geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
 
 const material = new THREE.PointsMaterial({
-    size: 2,
-    vertexColors: true
+    size:3,
+    vertexColors:true,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false
 });
 
-const galaxy = new THREE.Points(geometry, material);
+const galaxy = new THREE.Points(geometry,material);
 scene.add(galaxy);
 
 
+// ESTRELLAS LEJANAS
+const starsGeometry = new THREE.BufferGeometry();
+const starCount = 10000;
+const starPositions = new Float32Array(starCount*3);
+
+for(let i=0;i<starCount;i++){
+    const i3 = i*3;
+    starPositions[i3] = (Math.random()-0.5)*2000;
+    starPositions[i3+1] = (Math.random()-0.5)*2000;
+    starPositions[i3+2] = (Math.random()-0.5)*2000;
+}
+
+starsGeometry.setAttribute('position',new THREE.BufferAttribute(starPositions,3));
+
+const starsMaterial = new THREE.PointsMaterial({
+    color:0xffffff,
+    size:1
+});
+
+const stars = new THREE.Points(starsGeometry,starsMaterial);
+scene.add(stars);
+
+
 // ANIMACIÓN
-function animate() {
+function animate(){
     requestAnimationFrame(animate);
 
-    galaxy.rotation.y += 0.001;
+    galaxy.rotation.y += 0.0008;
+    stars.rotation.y += 0.0002;
 
     controls.update();
-    renderer.render(scene, camera);
+    renderer.render(scene,camera);
 }
 
 animate();
 
-
 // RESPONSIVE
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+window.addEventListener('resize',()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth,window.innerHeight);
 });
-
-
-// ACTIVAR MUSICA CON TOQUE
-document.body.addEventListener('click', () => {
-    const audio = document.getElementById("musica");
-    audio.play();
-}, { once: true });
 
 </script>
 
